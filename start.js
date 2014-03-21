@@ -32,11 +32,14 @@ app.post('/pictures', function(req, res) {
 
 var httpServer = http.createServer(app);
 var httpsServer = http.createServer(app);
-var n = 0;
+
+// var n = 1;
+// httpsServer.on('connection', function(socket) {
+//   console.log(n);
+//   n++;
+// });
 
 httpServer.listen(3300);
 httpsServer.listen(3301);
-
-
 
 console.log('Server started');
