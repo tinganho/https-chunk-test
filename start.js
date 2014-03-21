@@ -18,7 +18,6 @@ app.use(express.static(__dirname));
 app.use(express.bodyParser({ uploadDir: __dirname + '/tmp' }));
 app.use(express.logger('dev'));
 app.use(express.query());
-app.use(express.compress());
 app.use(express.errorHandler());
 app.use(express.cookieParser());
 app.use(app.router);
