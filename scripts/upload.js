@@ -18,7 +18,7 @@ function request(blob, callback) {
       timeout = true;
       callback(true);
     }
-  }, 3000);
+  }, 40000);
 }
 
 function getBlob(callback) {
