@@ -50,6 +50,9 @@ getBlob(function(blob) {
 
   var requests = 1;
   var min = 100000000000000, max = 0;
+  var slicedRequests = 0;
+  var duration = 0;
+  var timeouts = 0;
 
 
   function test() {
@@ -58,24 +61,30 @@ getBlob(function(blob) {
     var start = 0;
     var end = bytesPerChunk;
     var timeStart = Date.now();
-    var timeouts = 0;
+
+    slicedRequests++;
+
     request(blob.slice(start, end), function(timeout) {
       if(timeout) {
         timeouts++;
       }
 
-      // Run sample
-      samples++;
-      if(samples <= sampleSize) {
-        var duration = Date.now() - timeStart;
-        results.push(duration);
-        if(duration < min) {
-          min = duration;
-        }
-        if(duration > max) {
-          max = duration;
-        }
+      duration += Date.now() - timeStart;
+      if(slicedRequests !== requests) {
+        return test();
+      }
+      results.push(duration);
+      if(duration < min) {
+        min = duration;
+      }
+      if(duration > max) {
+        max = duration;
+      }
 
+      if(samples < sampleSize) {
+        slicedRequests = 0;
+        duration = 0;
+        samples++;
         return test();
       }
 
@@ -95,7 +104,7 @@ getBlob(function(blob) {
         td.innerHTML = max;
         tr.appendChild(td);
         var td = document.createElement('td');
-        td.innerHTML = sampleSize;
+        td.innerHTML = samples;
         tr.appendChild(td);
         var td = document.createElement('td');
         td.innerHTML = timeouts;
