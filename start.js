@@ -6,6 +6,7 @@ var express = require('express')
   , privateKey  = fs.readFileSync('sslcert/server.key', 'utf8')
   , certificate = fs.readFileSync('sslcert/server.crt', 'utf8')
   , credentials = { key: privateKey, cert: certificate };
+
 var app = express();
 
 var html = fs.readFileSync('index.html');
@@ -32,7 +33,7 @@ app.post('/pictures', function(req, res) {
 var httpServer = http.createServer(app);
 var httpsServer = https.createServer(credentials, app);
 
-httpServer.listen(3000);
-httpsServer.listen(3001);
+httpServer.listen(3300);
+httpsServer.listen(3301);
 
 console.log('Server started');
