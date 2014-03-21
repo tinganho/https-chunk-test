@@ -11,21 +11,18 @@ function request(blob, callback) {
   xhr.send(fd);
 }
 
-function getImage(callback) {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', '/images/test.jpg', true);
-  xhr.responseType = 'blob';
+function getBlob(callback) {
+  var text = '';
 
-  xhr.onload = function(e) {
-    if (this.status == 200) {
-      var blob = new Blob([this.response], {type: 'image/jpeg'});
-      callback(blob);
-    }
-  };
-  xhr.send();
+  for(var i = 0; i<150000; i++) {
+    text += 'f';
+  }
+
+  var blob = new Blob([text], {type: 'text/plain'});
+  callback(blob);
 }
 
-getImage(function(blob) {
+getBlob(function(blob) {
   var requests = 1;
   var maxRequests = 10;
   function test() {

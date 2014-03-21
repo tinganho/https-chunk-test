@@ -32,8 +32,11 @@ app.post('/pictures', function(req, res) {
 
 var httpServer = http.createServer(app);
 var httpsServer = http.createServer(app);
+var n = 0;
 
 httpServer.listen(3300);
 httpsServer.listen(3301);
+
+
 
 console.log('Server started');
