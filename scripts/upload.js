@@ -93,6 +93,9 @@ getBlob(function(blob) {
             td.innerHTML = max;
             tr.appendChild(td);
             var td = document.createElement('td');
+            td.innerHTML = sampleSize;
+            tr.appendChild(td);
+            var td = document.createElement('td');
             td.innerHTML = timeouts;
             tr.appendChild(td);
             document.querySelector('.table-body').appendChild(tr);
