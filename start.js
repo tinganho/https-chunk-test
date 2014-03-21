@@ -3,6 +3,7 @@ var express = require('express')
   , http = require('http')
   , https = require('https')
   , fs = require('fs')
+  , os = require('os')
   , privateKey  = fs.readFileSync('sslcert/server.key', 'utf8')
   , certificate = fs.readFileSync('sslcert/server.crt', 'utf8')
   , credentials = { key: privateKey, cert: certificate };
@@ -15,7 +16,7 @@ var certificate = fs.readFileSync('sslcert/server.crt');
 
 app.use(express.static(__dirname));
 
-app.use(express.bodyParser({ uploadDir: __dirname + '/tmp' }));
+app.use(express.bodyParser({ uploadDir: os.tmpdir() }));
 app.use(express.logger('dev'));
 app.use(express.query());
 app.use(express.compress());
@@ -31,7 +32,7 @@ app.post('/pictures', function(req, res) {
 });
 
 var httpServer = http.createServer(app);
-var httpsServer = https.createServer(credentials, app);
+var httpsServer = http.createServer(app);
 
 httpServer.listen(3300);
 httpsServer.listen(3301);
