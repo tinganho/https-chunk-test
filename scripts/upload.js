@@ -58,60 +58,58 @@ getBlob(function(blob) {
     var start = 0;
     var end = bytesPerChunk;
     var timeStart = Date.now();
-    var n = 0, timeouts = 0;
-    while(start < size) {
-      request(blob.slice(start, end), function(timeout) {
-        if(timeout) {
-          timeouts++;
+    var timeouts = 0;
+    request(blob.slice(start, end), function(timeout) {
+      if(timeout) {
+        timeouts++;
+      }
+
+      // Run sample
+      samples++;
+      if(samples <= sampleSize) {
+        var duration = Date.now() - timeStart;
+        results.push(duration);
+        if(duration < min) {
+          min = duration;
         }
-        n++;
-        if(n === requests) {
-          samples++;
-          if(samples <= sampleSize) {
-            var duration = Date.now() - timeStart;
-            results.push(duration);
-            if(duration < min) {
-              min = duration;
-            }
-            if(duration > max) {
-              max = duration;
-            }
-            return test();
-          }
-          if(requests <= maxRequests) {
-            var tr = document.createElement('tr');
-            var td = document.createElement('td');
-            td.innerHTML = requests;
-            tr.appendChild(td);
-            var td = document.createElement('td');
-            td.innerHTML = avg(results);
-            tr.appendChild(td);
-            var td = document.createElement('td');
-            td.innerHTML = min;
-            tr.appendChild(td);
-            var td = document.createElement('td');
-            td.innerHTML = max;
-            tr.appendChild(td);
-            var td = document.createElement('td');
-            td.innerHTML = sampleSize;
-            tr.appendChild(td);
-            var td = document.createElement('td');
-            td.innerHTML = timeouts;
-            tr.appendChild(td);
-            document.querySelector('.table-body').appendChild(tr);
-            results = [];
-            samples = 0;
-            timeouts = 0;
-            requests++;
-            min = 100000000000000;
-            max = 0;
-            test();
-          }
+        if(duration > max) {
+          max = duration;
         }
-      });
-      start = end;
-      end = start + bytesPerChunk;
-    }
+
+        return test();
+      }
+
+      // Increase and report concurrency and metrics
+      if(requests <= maxRequests) {
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        td.innerHTML = requests;
+        tr.appendChild(td);
+        var td = document.createElement('td');
+        td.innerHTML = avg(results);
+        tr.appendChild(td);
+        var td = document.createElement('td');
+        td.innerHTML = min;
+        tr.appendChild(td);
+        var td = document.createElement('td');
+        td.innerHTML = max;
+        tr.appendChild(td);
+        var td = document.createElement('td');
+        td.innerHTML = sampleSize;
+        tr.appendChild(td);
+        var td = document.createElement('td');
+        td.innerHTML = timeouts;
+        tr.appendChild(td);
+        document.querySelector('.table-body').appendChild(tr);
+        results = [];
+        samples = 0;
+        timeouts = 0;
+        min = 100000000000000;
+        max = 0;
+        requests++;
+        test();
+      }
+    });
   }
   test();
 
