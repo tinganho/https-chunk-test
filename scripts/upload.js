@@ -44,7 +44,7 @@ function avg(arr) {
 
 getBlob(function(blob) {
   var maxRequests = 10;
-  var samples = 0;
+  var samples = 1;
   var results = [];
   var sampleSize = 10;
 
@@ -89,7 +89,7 @@ getBlob(function(blob) {
       }
 
       // Increase and report concurrency and metrics
-      if(requests <= maxRequests) {
+      if(requests < maxRequests) {
         var tr = document.createElement('tr');
         var td = document.createElement('td');
         td.innerHTML = requests;
@@ -111,8 +111,9 @@ getBlob(function(blob) {
         tr.appendChild(td);
         document.querySelector('.table-body').appendChild(tr);
         results = [];
-        samples = 0;
+        samples = 1;
         timeouts = 0;
+        slicedRequests = 0;
         min = 100000000000000;
         max = 0;
         requests++;
