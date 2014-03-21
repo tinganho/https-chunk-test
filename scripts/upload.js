@@ -43,7 +43,7 @@ function avg(arr) {
 }
 
 getBlob(function(blob) {
-  var maxRequests = 10;
+  var maxRequests = 6;
   var samples = 1;
   var results = [];
   var sampleSize = 10;
@@ -61,65 +61,67 @@ getBlob(function(blob) {
     var start = 0;
     var end = bytesPerChunk;
     var timeStart = Date.now();
+    var slicedRequests = 0;
 
-    slicedRequests++;
+    for(var i = 0; i < requests; i++) {
+      request(blob.slice(start, end), function(timeout) {
+        slicedRequests++;
+        if(timeout) {
+          timeouts++;
+        }
 
-    request(blob.slice(start, end), function(timeout) {
-      if(timeout) {
-        timeouts++;
-      }
+        duration += Date.now() - timeStart;
+        if(slicedRequests !== requests) {
+          return;
+        }
+        results.push(duration);
+        if(duration < min) {
+          min = duration;
+        }
+        if(duration > max) {
+          max = duration;
+        }
 
-      duration += Date.now() - timeStart;
-      if(slicedRequests !== requests) {
-        return test();
-      }
-      results.push(duration);
-      if(duration < min) {
-        min = duration;
-      }
-      if(duration > max) {
-        max = duration;
-      }
+        if(samples < sampleSize) {
+          slicedRequests = 0;
+          duration = 0;
+          samples++;
+          return test();
+        }
 
-      if(samples < sampleSize) {
-        slicedRequests = 0;
-        duration = 0;
-        samples++;
-        return test();
-      }
-
-      // Increase and report concurrency and metrics
-      if(requests < maxRequests) {
-        var tr = document.createElement('tr');
-        var td = document.createElement('td');
-        td.innerHTML = requests;
-        tr.appendChild(td);
-        var td = document.createElement('td');
-        td.innerHTML = avg(results);
-        tr.appendChild(td);
-        var td = document.createElement('td');
-        td.innerHTML = min;
-        tr.appendChild(td);
-        var td = document.createElement('td');
-        td.innerHTML = max;
-        tr.appendChild(td);
-        var td = document.createElement('td');
-        td.innerHTML = samples;
-        tr.appendChild(td);
-        var td = document.createElement('td');
-        td.innerHTML = timeouts;
-        tr.appendChild(td);
-        document.querySelector('.table-body').appendChild(tr);
-        results = [];
-        samples = 1;
-        timeouts = 0;
-        slicedRequests = 0;
-        min = 100000000000000;
-        max = 0;
-        requests++;
-        test();
-      }
-    });
+        // Increase and report concurrency and metrics
+        if(requests <= maxRequests) {
+          var tr = document.createElement('tr');
+          var td = document.createElement('td');
+          td.innerHTML = requests;
+          tr.appendChild(td);
+          var td = document.createElement('td');
+          td.innerHTML = avg(results);
+          tr.appendChild(td);
+          var td = document.createElement('td');
+          td.innerHTML = min;
+          tr.appendChild(td);
+          var td = document.createElement('td');
+          td.innerHTML = max;
+          tr.appendChild(td);
+          var td = document.createElement('td');
+          td.innerHTML = samples;
+          tr.appendChild(td);
+          var td = document.createElement('td');
+          td.innerHTML = timeouts;
+          tr.appendChild(td);
+          document.querySelector('.table-body').appendChild(tr);
+          results = [];
+          samples = 1;
+          timeouts = 0;
+          slicedRequests = 0;
+          min = 100000000000000;
+          max = 0;
+          requests++;
+          test();
+        }
+      });
+    }
   }
   test();
 
