@@ -6,7 +6,7 @@ function request(blob, callback) {
   xhr.onload = function(e) {
     if(!timeout) {
       success = true;
-      callback();
+      callback(false);
     }
   };
   var fd = new FormData();
@@ -16,7 +16,7 @@ function request(blob, callback) {
   setTimeout(function() {
     if(!success) {
       timeout = true;
-      callback();
+      callback(true);
     }
   }, 3000);
 }
@@ -28,7 +28,7 @@ function getBlob(callback) {
     text += 'f';
   }
 
-  var blob = new Blob([text], {type: 'text/plain'});
+  var blob = new Blob([text], { type: 'text/plain' });
   callback(blob);
 }
 
@@ -48,48 +48,69 @@ getBlob(function(blob) {
   var results = [];
   var sampleSize = 10;
 
-  function sample() {
-    var requests = 1;
-    function test() {
-      var size = blob.size;
-      var bytesPerChunk = size / requests;
-      var start = 0;
-      var end = bytesPerChunk;
-      var timeStart = Date.now();
-      var n = 0;
-      while(start < size) {
-        request(blob.slice(start, end), function() {
-          n++;
-          if(n === requests) {
-            samples++;
-            if(samples <= sampleSize) {
-              results.push(Date.now() - timeStart);
-              return test();
-            }
-            if(requests <= maxRequests) {
-              var tr = document.createElement('tr');
-              var td = document.createElement('td');
-              td.innerHTML = requests;
-              tr.appendChild(td);
-              var td = document.createElement('td');
-              td.innerHTML = avg(results);
-              tr.appendChild(td);
-              document.querySelector('.table-body').appendChild(tr);
-              results = [];
-              samples = 0;
-              requests++;
-              test();
-            }
-          }
-        });
-        start = end;
-        end = start + bytesPerChunk;
-      }
-    }
-    test();
-  }
+  var requests = 1;
+  var min = 100000000000000, max = 0;
 
-  sample();
+
+  function test() {
+    var size = blob.size;
+    var bytesPerChunk = size / requests;
+    var start = 0;
+    var end = bytesPerChunk;
+    var timeStart = Date.now();
+    var n = 0, timeouts = 0;
+    while(start < size) {
+      request(blob.slice(start, end), function(timeout) {
+        if(timeout) {
+          timeouts++;
+        }
+        n++;
+        if(n === requests) {
+          samples++;
+          if(samples <= sampleSize) {
+            var duration = Date.now() - timeStart;
+            results.push(duration);
+            if(duration < min) {
+              min = duration;
+            }
+            if(duration > max) {
+              max = duration;
+            }
+            return test();
+          }
+          if(requests <= maxRequests) {
+            var tr = document.createElement('tr');
+            var td = document.createElement('td');
+            td.innerHTML = requests;
+            tr.appendChild(td);
+            var td = document.createElement('td');
+            td.innerHTML = avg(results);
+            tr.appendChild(td);
+            var td = document.createElement('td');
+            td.innerHTML = min;
+            tr.appendChild(td);
+            var td = document.createElement('td');
+            td.innerHTML = max;
+            tr.appendChild(td);
+            var td = document.createElement('td');
+            td.innerHTML = timeouts;
+            tr.appendChild(td);
+            document.querySelector('.table-body').appendChild(tr);
+            results = [];
+            samples = 0;
+            timeouts = 0;
+            requests++;
+            min = 100000000000000;
+            max = 0;
+            test();
+          }
+        }
+      });
+      start = end;
+      end = start + bytesPerChunk;
+    }
+  }
+  test();
 
 });
 
