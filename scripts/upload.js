@@ -62,6 +62,7 @@ getBlob(function(blob) {
     var end = bytesPerChunk;
     var timeStart = Date.now();
     var slicedRequests = 0;
+    var slicedMax = 0;
 
     for(var i = 0; i < requests; i++) {
       request(blob.slice(start, end), function(timeout) {
@@ -70,19 +71,23 @@ getBlob(function(blob) {
           timeouts++;
         }
 
-        duration += Date.now() - timeStart;
+        duration = Date.now() - timeStart;
+        if(duration > slicedMax) {
+          slicedMax = duration;
+        }
         if(slicedRequests !== requests) {
           return;
         }
         results.push(duration);
-        if(duration < min) {
-          min = duration;
+        if(slicedMax < min) {
+          min = slicedMax;
         }
-        if(duration > max) {
-          max = duration;
+        if(slicedMax > max) {
+          max = slicedMax;
         }
 
         if(samples < sampleSize) {
+          slicedMax = 0;
           slicedRequests = 0;
           duration = 0;
           samples++;
@@ -114,6 +119,7 @@ getBlob(function(blob) {
           results = [];
           samples = 1;
           timeouts = 0;
+          slicedMax = 0;
           slicedRequests = 0;
           min = 100000000000000;
           max = 0;
